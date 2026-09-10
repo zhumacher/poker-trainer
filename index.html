@@ -353,31 +353,50 @@ function cardStr(c){return c.r+c.s.sym;}
 function handStr(cards){return cards.map(cardStr).join(' ');}
 
 // === HAND EVAL ===
-function evalHand(hole,boardC){
-  const all=[...hole,...boardC];
-  if(all.length<2)return[0,0,0,0,0];
-  const ranks=all.map(c=>RANK_VAL[c.r]).sort((a,b)=>b-a);
-  const suits=all.map(c=>c.s.sym);
+// Evaluate best 5-card hand from up to 7 cards
+function eval5(cards5){
+  // cards5: array of {r, s} objects, exactly 5
+  const ranks=cards5.map(c=>RANK_VAL[c.r]).sort((a,b)=>b-a);
+  const suits=cards5.map(c=>c.s.sym);
   const rc={};ranks.forEach(r=>rc[r]=(rc[r]||0)+1);
   const groups=Object.entries(rc).map(([r,c])=>[parseInt(r),c]).sort((a,b)=>b[1]-a[1]||b[0]-a[0]);
   const counts=groups.map(g=>g[1]),byRank=groups.map(g=>g[0]);
-  const sc={};suits.forEach(s=>sc[s]=(sc[s]||0)+1);
-  const flushSuit=Object.entries(sc).find(([s,c])=>c>=5)?.[0];
-  let flushRanks=null;
-  if(flushSuit)flushRanks=all.filter(c=>c.s.sym===flushSuit).map(c=>RANK_VAL[c.r]).sort((a,b)=>b-a).slice(0,5);
+  const flush=new Set(suits).size===1;
   const uniq=[...new Set(ranks)].sort((a,b)=>b-a);
-  const ul=uniq.includes(14)?[...uniq,1]:uniq;
-  let sH=null;
-  for(let i=0;i<=ul.length-5;i++){const sl=ul.slice(i,i+5);if(sl[0]-sl[4]===4&&new Set(sl).size===5){sH=sl[0];break;}}
-  if(flushSuit&&sH){const fc=all.filter(c=>c.s.sym===flushSuit).map(c=>RANK_VAL[c.r]).sort((a,b)=>b-a);const fu=[...new Set(fc)];const fl=fu.includes(14)?[...fu,1]:fu;let sfH=null;for(let i=0;i<=fl.length-5;i++){const sl=fl.slice(i,i+5);if(sl[0]-sl[4]===4&&new Set(sl).size===5){sfH=sl[0];break;}}if(sfH)return[8,sfH];}
-  if(counts[0]===4)return[7,byRank[0],byRank[1]];
-  if(counts[0]===3&&counts[1]>=2)return[6,byRank[0],byRank[1]];
-  if(flushRanks)return[5,...flushRanks];
-  if(sH)return[4,sH];
-  if(counts[0]===3)return[3,byRank[0],...byRank.filter(r=>rc[r]===1).slice(0,2)];
-  if(counts[0]===2&&counts[1]===2)return[2,byRank[0],byRank[1],byRank.find(r=>rc[r]===1)||0];
-  if(counts[0]===2)return[1,byRank[0],...byRank.filter(r=>rc[r]===1).slice(0,3)];
-  return[0,...ranks.slice(0,5)];
+  const low=uniq.includes(14)?[...uniq,1]:uniq;
+  let straight=false,sHigh=0;
+  if(uniq.length>=5){for(let i=0;i<=low.length-5;i++){const sl=low.slice(i,i+5);if(sl[0]-sl[4]===4){straight=true;sHigh=Math.max(sHigh,sl[0]);break;}}}
+  if(flush&&straight)return[8,sHigh];
+  if(counts[0]===4)return[7,byRank[0],byRank.find(r=>rc[r]===1)||0];
+  if(counts[0]===3&&counts[1]===2)return[6,byRank[0],byRank[1]];
+  if(flush)return[5,...ranks];
+  if(straight)return[4,sHigh];
+  if(counts[0]===3)return[3,byRank[0],...byRank.filter(r=>rc[r]===1)];
+  if(counts[0]===2&&counts[1]===2){const k=byRank.find(r=>rc[r]===1)||0;return[2,byRank[0],byRank[1],k];}
+  if(counts[0]===2)return[1,byRank[0],...byRank.filter(r=>rc[r]===1)];
+  return[0,...ranks];
+}
+
+function combos5(arr){
+  // Generate all C(n,5) combinations of 5 cards from arr
+  const res=[];
+  const n=arr.length;
+  for(let a=0;a<n-4;a++)for(let b=a+1;b<n-3;b++)for(let c=b+1;c<n-2;c++)for(let d=c+1;d<n-1;d++)for(let e=d+1;e<n;e++)
+    res.push([arr[a],arr[b],arr[c],arr[d],arr[e]]);
+  return res;
+}
+
+function evalHand(hole,boardC){
+  const all=[...hole,...boardC];
+  if(all.length<2)return[0,0,0,0,0];
+  if(all.length<=5)return eval5(all.length===5?all:[...all,...Array(5-all.length).fill({r:'2',s:{sym:'♠',color:'black'}})]);
+  // Pick best 5 from all cards
+  let best=null;
+  combos5(all).forEach(combo=>{
+    const ev=eval5(combo);
+    if(!best||compareHands(ev,best)>0)best=ev;
+  });
+  return best||[0,0,0,0,0];
 }
 function compareHands(h1,h2){for(let i=0;i<Math.max(h1.length,h2.length);i++){const a=h1[i]||0,b=h2[i]||0;if(a>b)return 1;if(a<b)return -1;}return 0;}
 function handName(hole,boardC){if(!hole||hole.length<2)return '';return HAND_NAMES[evalHand(hole,boardC)[0]];}
@@ -475,7 +494,8 @@ function renderAdvice(){
     if(isPair&&maxR>=11)advice='Сильная пара (JJ+). Рейзи — за столом '+n+' игроков.';
     else if(isPair&&maxR>=8)advice='Средняя пара. Рейзи для инициативы.';
     else if(isPair)advice='Малая пара. Колл, цель — сет на флопе.';
-    else if(maxR>=13)advice='Туз. Рейзи если вторая карта J+.';
+    else if(maxR>=14)advice='Туз. Рейзи если вторая карта J+.';
+    else if(maxR===13){const minR=Math.min(...hr);advice=minR>=10?'Король с картинкой. Рейзи.':'Король со слабым кикером. Рейзи в позиции, иначе осторожно.';}
     else if(maxR>=11&&isSuited)advice='Суитед картинки. Рейзи или колл.';
     else if(eq>0.55)advice='Рука выше среднего. Рейзи.';
     else advice='Слабая рука. Фолд.';
