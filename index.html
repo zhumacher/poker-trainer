@@ -7,7 +7,7 @@
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
-  --felt: #1a5c34; --felt-dark: #143f24; --felt-light: #226b40;
+  --felt: #1a5c34; --felt-dark: #0e3a1f; --felt-light: #236b41;
   --card-red: #c0392b; --card-black: #1a1a1a; --card-blue: #1e3a8a;
   --gold: #f0b429; --bg: #0f1923; --panel: #161f2b; --panel2: #1c2836;
   --border: rgba(255,255,255,0.08); --border2: rgba(255,255,255,0.14);
@@ -17,13 +17,16 @@
   --red: #ef4444; --red-bg: rgba(239,68,68,0.12);
   --amber: #f59e0b; --amber-bg: rgba(245,158,11,0.12);
   --purple: #a855f7; --purple-bg: rgba(168,85,247,0.12);
-  --radius: 10px; --card-w: 58px; --card-h: 82px;
+  --radius: 10px;
+  --card-w: 62px; --card-h: 88px;
+  --card-w-sm: 46px; --card-h-sm: 66px;
 }
 html, body { height: 100%; overflow: hidden; }
 body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 15px; line-height: 1.5; display: flex; flex-direction: column; }
 
+/* HEADER */
 .header { background: var(--panel); border-bottom: 1px solid var(--border); padding: 10px 18px; display: flex; align-items: center; gap: 14px; flex-shrink: 0; }
-.header-title { font-size: 17px; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 8px; }
+.header-title { font-size: 17px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
 .header-title::before { content: '♠'; color: var(--accent); font-size: 20px; }
 .stats-bar { display: flex; gap: 20px; margin-left: auto; align-items: center; }
 .stat { display: flex; flex-direction: column; align-items: flex-end; }
@@ -32,9 +35,11 @@ body { background: var(--bg); color: var(--text); font-family: -apple-system, Bl
 .hdr-btn { background: var(--panel2); border: 1px solid var(--border2); color: var(--text2); padding: 7px 14px; border-radius: var(--radius); cursor: pointer; font-size: 13px; white-space: nowrap; }
 .hdr-btn:hover { background: var(--accent-bg); color: var(--accent); }
 
+/* LAYOUT */
 .main { display: flex; flex: 1; overflow: hidden; min-height: 0; }
 
-.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 200; align-items: center; justify-content: center; }
+/* MODALS */
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.78); z-index: 200; align-items: center; justify-content: center; }
 .modal-overlay.show { display: flex; }
 .modal { background: var(--panel); border: 1px solid var(--border2); border-radius: 14px; padding: 26px; width: 380px; max-width: 95vw; }
 .modal-title { font-size: 17px; font-weight: 700; margin-bottom: 18px; }
@@ -47,71 +52,97 @@ body { background: var(--bg); color: var(--text); font-family: -apple-system, Bl
 .modal-btn.primary { background: var(--accent); color: #fff; }
 .modal-btn.secondary { background: var(--panel2); color: var(--text2); border: 1px solid var(--border2); }
 
-.game-col { width: 460px; min-width: 320px; flex-shrink: 0; display: flex; flex-direction: column; border-right: 1px solid var(--border); overflow: hidden; }
+/* GAME COLUMN */
+.game-col { width: 520px; min-width: 340px; flex-shrink: 0; display: flex; flex-direction: column; border-right: 1px solid var(--border); overflow: hidden; }
 
-.phase-bar { padding: 9px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; flex-shrink: 0; flex-wrap: wrap; }
+/* PHASE BAR */
+.phase-bar { padding: 9px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
 .phase-item { display: flex; align-items: center; gap: 5px; font-size: 13px; color: var(--text3); }
-.phase-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border2); flex-shrink: 0; }
+.phase-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border2); flex-shrink: 0; transition: background 0.3s; }
 .phase-dot.active { background: var(--accent); }
 .phase-dot.done { background: var(--green); }
 .blinds-info { margin-left: auto; font-size: 13px; color: var(--text3); white-space: nowrap; }
 .blinds-info strong { color: var(--gold); }
 
-.felt-table { background: radial-gradient(ellipse at center, var(--felt-light) 0%, var(--felt) 55%, var(--felt-dark) 100%); border-bottom: 3px solid #0a2a14; padding: 16px; flex-shrink: 0; position: relative; }
-.table-oval { border: 2px solid rgba(255,255,255,0.12); border-radius: 90px; padding: 16px 20px; min-height: 130px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; }
-.board-label { font-size: 11px; color: rgba(255,255,255,0.45); text-transform: uppercase; letter-spacing: 1px; }
-.board-cards { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
-.pot-badge { background: rgba(0,0,0,0.4); border-radius: 20px; padding: 4px 16px; font-size: 14px; color: var(--gold); font-weight: 700; }
-.result-overlay { display: none; position: absolute; inset: 0; background: rgba(0,0,0,0.78); border-radius: 90px; align-items: center; justify-content: center; flex-direction: column; gap: 6px; z-index: 10; }
-.result-overlay.show { display: flex; }
-.result-title { font-size: 26px; font-weight: 700; color: #fff; }
-.result-sub { font-size: 13px; color: rgba(255,255,255,0.65); text-align: center; padding: 0 24px; }
+/* POKER TABLE */
+.table-wrap { background: radial-gradient(ellipse at center, #1e6b3e 0%, #155230 55%, #0e3a22 100%); border-bottom: 3px solid #07200f; padding: 18px 16px; flex-shrink: 0; position: relative; }
+.table-felt { border: 3px solid rgba(255,255,255,0.1); border-radius: 120px; padding: 0; overflow: visible; position: relative; min-height: 340px; display: flex; flex-direction: column; }
 
-.card { width: var(--card-w); height: var(--card-h); background: #fff; border-radius: 7px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; box-shadow: 0 3px 8px rgba(0,0,0,0.45); flex-shrink: 0; }
-.card .rank { font-size: 17px; font-weight: 800; line-height: 1; }
-.card .suit { font-size: 24px; line-height: 1; }
+/* OPPONENTS ON TABLE */
+.opp-top { display: flex; justify-content: space-around; align-items: flex-start; padding: 14px 20px 6px; gap: 8px; }
+.opp-seat { display: flex; flex-direction: column; align-items: center; gap: 5px; }
+.opp-cards-row { display: flex; gap: 4px; }
+.opp-label { font-size: 11px; color: rgba(255,255,255,0.55); text-align: center; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.opp-name { font-weight: 600; font-size: 12px; }
+.opp-stack { font-size: 11px; color: var(--gold); }
+.opp-bet-chip { background: rgba(0,0,0,0.5); border: 1px solid var(--gold); color: var(--gold); font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 10px; white-space: nowrap; }
+.opp-folded { opacity: 0.35; }
+.opp-badge { font-size: 10px; font-weight: 700; padding: 1px 5px; border-radius: 3px; }
+.opp-badge.d { background: var(--amber-bg); color: var(--amber); }
+.opp-badge.sb { background: var(--purple-bg); color: var(--purple); }
+.opp-badge.bb { background: var(--green-bg); color: var(--green); }
+
+/* BOARD CENTER */
+.board-center { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; padding: 8px; }
+.board-cards { display: flex; gap: 8px; justify-content: center; }
+.pot-badge { background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.12); border-radius: 20px; padding: 5px 18px; font-size: 14px; color: var(--gold); font-weight: 700; }
+
+/* HERO BOTTOM */
+.hero-area { display: flex; justify-content: center; align-items: flex-end; padding: 6px 20px 14px; gap: 16px; }
+.hero-cards-row { display: flex; gap: 8px; }
+.hero-info { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.hero-name-tag { font-size: 13px; font-weight: 700; color: var(--accent); display: flex; align-items: center; gap: 5px; }
+.hero-stack-tag { font-size: 12px; color: var(--gold); }
+.hero-hand-tag { font-size: 12px; color: var(--green); font-weight: 600; }
+.hero-bet-chip { background: rgba(0,0,0,0.5); border: 1px solid var(--gold); color: var(--gold); font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 10px; }
+
+/* RESULT OVERLAY */
+.result-overlay { display: none; position: absolute; inset: 0; background: rgba(0,0,0,0.78); border-radius: 120px; align-items: center; justify-content: center; flex-direction: column; gap: 6px; z-index: 10; }
+.result-overlay.show { display: flex; }
+.result-title { font-size: 28px; font-weight: 700; color: #fff; }
+.result-sub { font-size: 13px; color: rgba(255,255,255,0.65); text-align: center; padding: 0 28px; }
+
+/* CARDS */
+.card { background: #fff; border-radius: 7px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; box-shadow: 0 3px 10px rgba(0,0,0,0.5); flex-shrink: 0; }
+.card.lg { width: var(--card-w); height: var(--card-h); }
+.card.sm { width: var(--card-w-sm); height: var(--card-h-sm); }
+.card.lg .rank { font-size: 18px; }
+.card.lg .suit { font-size: 26px; }
+.card.sm .rank { font-size: 14px; }
+.card.sm .suit { font-size: 19px; }
+.card .rank { font-weight: 800; line-height: 1; }
+.card .suit { line-height: 1; }
 .card.red .rank, .card.red .suit { color: var(--card-red); }
 .card.black .rank, .card.black .suit { color: var(--card-black); }
 .card.back { background: var(--card-blue); background-image: repeating-linear-gradient(45deg,rgba(255,255,255,0.04) 0,rgba(255,255,255,0.04) 2px,transparent 2px,transparent 9px); }
-.card.back .suit { font-size: 28px; color: rgba(255,255,255,0.2); }
+.card.back .suit { color: rgba(255,255,255,0.2); }
 .card.empty { background: rgba(255,255,255,0.07); border: 2px dashed rgba(255,255,255,0.18); box-shadow: none; }
 
-.suit-legend { display: flex; gap: 12px; padding: 6px 16px; border-bottom: 1px solid var(--border); flex-shrink: 0; background: rgba(0,0,0,0.2); flex-wrap: wrap; }
+/* SUIT LEGEND */
+.suit-legend { display: flex; gap: 12px; padding: 7px 16px; border-bottom: 1px solid var(--border); flex-shrink: 0; background: rgba(0,0,0,0.2); }
 .suit-legend span { font-size: 13px; }
 
-.players-scroll { overflow-y: auto; flex-shrink: 0; max-height: 200px; border-bottom: 1px solid var(--border); }
-.player-row { display: flex; align-items: center; gap: 10px; padding: 9px 14px; border-bottom: 1px solid var(--border); }
-.player-row:last-child { border-bottom: none; }
-.player-info { min-width: 110px; }
-.player-name-tag { font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
-.player-stack-tag { font-size: 12px; color: var(--text3); margin-top: 1px; }
-.player-hand-name { font-size: 12px; margin-top: 2px; }
-.player-cards-row { display: flex; gap: 6px; }
-.badge { font-size: 11px; padding: 2px 6px; border-radius: 4px; font-weight: 700; }
-.badge.hero { background: var(--accent-bg); color: var(--accent); }
-.badge.dealer { background: var(--amber-bg); color: var(--amber); }
-.badge.sb { background: var(--purple-bg); color: var(--purple); }
-.badge.bb { background: var(--green-bg); color: var(--green); }
-.badge.folded { background: var(--red-bg); color: var(--red); }
-.player-bet-tag { font-size: 12px; color: var(--gold); margin-left: auto; white-space: nowrap; }
-
+/* EQUITY */
 .equity-section { padding: 9px 16px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
 .equity-label { font-size: 12px; color: var(--text3); margin-bottom: 6px; display: flex; justify-content: space-between; }
 .equity-bar { height: 6px; background: rgba(255,255,255,0.08); border-radius: 3px; overflow: hidden; }
 .equity-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--green)); transition: width 0.4s; }
 
+/* ADVICE */
 .advice-section { padding: 11px 16px; border-bottom: 1px solid var(--border); flex-shrink: 0; background: var(--accent-bg); border-left: 3px solid var(--accent); }
 .advice-title { font-size: 11px; color: var(--accent); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
 .advice-text { font-size: 13px; color: var(--text); line-height: 1.5; }
 
+/* ACTIONS */
 .actions-section { padding: 12px 14px; display: flex; gap: 8px; flex-shrink: 0; flex-wrap: wrap; }
-.btn { flex: 1; min-width: 90px; padding: 11px 10px; border-radius: var(--radius); font-size: 14px; font-weight: 600; cursor: pointer; border: 1px solid var(--border2); background: var(--panel2); color: var(--text); text-align: center; white-space: nowrap; }
+.btn { flex: 1; min-width: 88px; padding: 11px 10px; border-radius: var(--radius); font-size: 14px; font-weight: 600; cursor: pointer; border: 1px solid var(--border2); background: var(--panel2); color: var(--text); text-align: center; white-space: nowrap; }
 .btn.fold { background: var(--red-bg); color: var(--red); border-color: rgba(239,68,68,0.35); }
 .btn.call { background: var(--accent-bg); color: var(--accent); border-color: rgba(59,130,246,0.35); }
 .btn.raise { background: var(--green-bg); color: var(--green); border-color: rgba(34,197,94,0.35); }
 .btn.deal { background: var(--accent); color: #fff; border-color: var(--accent); flex: 2; font-size: 15px; }
 .btn.check { background: var(--purple-bg); color: var(--purple); border-color: rgba(168,85,247,0.35); }
 
+/* LOG */
 .log-section { flex: 1; overflow-y: auto; padding: 9px 16px; min-height: 0; }
 .log-line { font-size: 12px; color: var(--text3); padding: 3px 0; border-bottom: 1px solid rgba(255,255,255,0.03); }
 .log-line.you { color: var(--accent); }
@@ -120,15 +151,16 @@ body { background: var(--bg); color: var(--text); font-family: -apple-system, Bl
 .log-line.sep { color: var(--amber); font-weight: 700; }
 .log-line.opp { color: var(--text2); }
 
+/* ANALYSIS */
 .analysis-col { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: var(--panel); min-width: 0; }
-.analysis-header { padding: 13px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; flex-shrink: 0; flex-wrap: wrap; }
+.analysis-header { padding: 13px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
 .analysis-header-title { font-size: 15px; font-weight: 700; }
 .analysis-badge { font-size: 12px; background: var(--green-bg); color: var(--green); padding: 3px 10px; border-radius: 6px; display: none; }
 .api-key-btn { margin-left: auto; font-size: 13px; background: var(--panel2); border: 1px solid var(--border2); color: var(--text3); padding: 6px 14px; border-radius: 8px; cursor: pointer; white-space: nowrap; }
 .api-key-btn.active { color: var(--green); border-color: rgba(34,197,94,0.4); background: var(--green-bg); }
 .analysis-body { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 14px; min-height: 0; }
 .analysis-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; gap: 12px; color: var(--text3); text-align: center; }
-.analysis-empty-icon { font-size: 42px; opacity: 0.25; }
+.analysis-empty-icon { font-size: 44px; opacity: 0.22; }
 .analysis-loading { display: none; flex-direction: column; align-items: center; justify-content: center; height: 100%; gap: 14px; }
 .analysis-loading.show { display: flex; }
 .spinner { width: 32px; height: 32px; border: 3px solid var(--border2); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
@@ -168,22 +200,10 @@ body { background: var(--bg); color: var(--text); font-family: -apple-system, Bl
 <div class="modal-overlay" id="setup-modal">
   <div class="modal">
     <div class="modal-title">⚙️ Настройки стола</div>
-    <div class="modal-field">
-      <div class="modal-label">Количество игроков (2–7)</div>
-      <input type="number" id="cfg-players" min="2" max="7" value="2">
-    </div>
-    <div class="modal-field">
-      <div class="modal-label">Стартовый стек каждого игрока</div>
-      <input type="number" id="cfg-stack" min="100" step="100" value="1000">
-    </div>
-    <div class="modal-field">
-      <div class="modal-label">Малый блайнд (SB)</div>
-      <input type="number" id="cfg-sb" min="1" value="5">
-    </div>
-    <div class="modal-field">
-      <div class="modal-label">Большой блайнд (BB)</div>
-      <input type="number" id="cfg-bb" min="2" value="10">
-    </div>
+    <div class="modal-field"><div class="modal-label">Игроков (2–7)</div><input type="number" id="cfg-players" min="2" max="7" value="4"></div>
+    <div class="modal-field"><div class="modal-label">Стартовый стек</div><input type="number" id="cfg-stack" min="100" step="100" value="1000"></div>
+    <div class="modal-field"><div class="modal-label">Малый блайнд (SB)</div><input type="number" id="cfg-sb" min="1" value="5"></div>
+    <div class="modal-field"><div class="modal-label">Большой блайнд (BB)</div><input type="number" id="cfg-bb" min="2" value="10"></div>
     <div class="modal-actions">
       <button class="modal-btn secondary" onclick="closeSetup()">Отмена</button>
       <button class="modal-btn primary" onclick="applySetup()">Применить</button>
@@ -196,9 +216,9 @@ body { background: var(--bg); color: var(--text); font-family: -apple-system, Bl
   <div class="modal">
     <div class="modal-title">🔑 OpenAI API ключ</div>
     <div class="modal-field">
-      <div class="modal-label">Вставь ключ — он сохранится в браузере и не попадёт в код</div>
+      <div class="modal-label">Ключ хранится только в браузере</div>
       <input type="password" id="api-key-input" placeholder="sk-...">
-      <div class="modal-hint">Где взять: platform.openai.com → API keys → Create new secret key</div>
+      <div class="modal-hint">Получить: platform.openai.com → API keys → Create new secret key</div>
     </div>
     <div class="modal-actions">
       <button class="modal-btn secondary" onclick="closeApiKey()">Отмена</button>
@@ -218,6 +238,7 @@ body { background: var(--bg); color: var(--text); font-family: -apple-system, Bl
 </div>
 
 <div class="main">
+  <!-- GAME -->
   <div class="game-col">
     <div class="phase-bar">
       <div class="phase-item"><div class="phase-dot active" id="pd0"></div>Префлоп</div>
@@ -227,11 +248,15 @@ body { background: var(--bg); color: var(--text); font-family: -apple-system, Bl
       <div class="blinds-info" id="blinds-info">SB <strong>5</strong> / BB <strong>10</strong></div>
     </div>
 
-    <div class="felt-table">
-      <div class="table-oval">
-        <div class="board-label">Борд</div>
-        <div class="board-cards" id="board"></div>
-        <div class="pot-badge">Банк: <span id="pot-disp">0</span></div>
+    <!-- TABLE -->
+    <div class="table-wrap">
+      <div class="table-felt">
+        <div class="opp-top" id="opp-top"></div>
+        <div class="board-center">
+          <div class="board-cards" id="board"></div>
+          <div class="pot-badge">Банк: <span id="pot-disp">0</span></div>
+        </div>
+        <div class="hero-area" id="hero-area"></div>
         <div class="result-overlay" id="result-overlay">
           <div class="result-title" id="result-title"></div>
           <div class="result-sub" id="result-sub"></div>
@@ -246,10 +271,8 @@ body { background: var(--bg); color: var(--text); font-family: -apple-system, Bl
       <span style="color:#111;background:#ddd;padding:1px 6px;border-radius:3px">♣ трефы</span>
     </div>
 
-    <div class="players-scroll" id="players-list"></div>
-
     <div class="equity-section">
-      <div class="equity-label"><span>Эквити (шанс выиграть)</span><span id="eq-pct" style="color:var(--accent);font-weight:700">50%</span></div>
+      <div class="equity-label"><span>Эквити героя</span><span id="eq-pct" style="color:var(--accent);font-weight:700">50%</span></div>
       <div class="equity-bar"><div class="equity-fill" id="eq-fill" style="width:50%"></div></div>
     </div>
 
@@ -265,6 +288,7 @@ body { background: var(--bg); color: var(--text); font-family: -apple-system, Bl
     <div class="log-section" id="log-box"></div>
   </div>
 
+  <!-- ANALYSIS -->
   <div class="analysis-col">
     <div class="analysis-header">
       <div class="analysis-header-title">Разбор раздачи</div>
@@ -286,7 +310,7 @@ body { background: var(--bg); color: var(--text); font-family: -apple-system, Bl
 </div>
 
 <script>
-let CFG = { players: 2, startStack: 1000, sb: 5, bb: 10 };
+let CFG = { players: 4, startStack: 1000, sb: 5, bb: 10 };
 const RANKS=['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
 const SUITS=[{sym:'♠',color:'black'},{sym:'♥',color:'red'},{sym:'♦',color:'red'},{sym:'♣',color:'black'}];
 const RANK_VAL={'2':2,'3':3,'4':4,'5':5,'6':6,'7':7,'8':8,'9':9,'10':10,'J':11,'Q':12,'K':13,'A':14};
@@ -296,27 +320,20 @@ const PLAYER_COLORS=['var(--accent)','var(--green)','var(--amber)','var(--purple
 const phaseNames=['Префлоп','Флоп','Тёрн','Ривер'];
 let deck=[],board=[],phase=0,pot=0,handsPlayed=0,actionLog=[];
 let betToCall=0,currentBet=0,players=[],dealerIdx=0;
+let showdownMode=false;
 
-// API KEY
+// === API KEY ===
 function getApiKey(){ return localStorage.getItem('openai_api_key')||''; }
 function openApiKey(){ document.getElementById('api-key-input').value=getApiKey(); document.getElementById('apikey-modal').classList.add('show'); }
 function closeApiKey(){ document.getElementById('apikey-modal').classList.remove('show'); }
-function saveApiKey(){
-  const k=document.getElementById('api-key-input').value.trim();
-  if(k) localStorage.setItem('openai_api_key',k); else localStorage.removeItem('openai_api_key');
-  closeApiKey(); updateApiKeyBtn();
-}
-function updateApiKeyBtn(){
-  const btn=document.getElementById('api-key-btn');
-  if(getApiKey()){btn.classList.add('active');btn.textContent='🔑 Ключ сохранён';}
-  else{btn.classList.remove('active');btn.textContent='🔑 Добавить ключ';}
-}
+function saveApiKey(){ const k=document.getElementById('api-key-input').value.trim(); if(k)localStorage.setItem('openai_api_key',k); else localStorage.removeItem('openai_api_key'); closeApiKey(); updateApiKeyBtn(); }
+function updateApiKeyBtn(){ const btn=document.getElementById('api-key-btn'); if(getApiKey()){btn.classList.add('active');btn.textContent='🔑 Ключ сохранён';}else{btn.classList.remove('active');btn.textContent='🔑 Добавить ключ';} }
 
-// SETUP
+// === SETUP ===
 function openSetup(){ document.getElementById('cfg-players').value=CFG.players; document.getElementById('cfg-stack').value=CFG.startStack; document.getElementById('cfg-sb').value=CFG.sb; document.getElementById('cfg-bb').value=CFG.bb; document.getElementById('setup-modal').classList.add('show'); }
 function closeSetup(){ document.getElementById('setup-modal').classList.remove('show'); }
 function applySetup(){
-  CFG.players=Math.min(7,Math.max(2,parseInt(document.getElementById('cfg-players').value)||2));
+  CFG.players=Math.min(7,Math.max(2,parseInt(document.getElementById('cfg-players').value)||4));
   CFG.startStack=Math.max(100,parseInt(document.getElementById('cfg-stack').value)||1000);
   CFG.sb=Math.max(1,parseInt(document.getElementById('cfg-sb').value)||5);
   CFG.bb=Math.max(CFG.sb+1,parseInt(document.getElementById('cfg-bb').value)||10);
@@ -329,13 +346,13 @@ function initPlayers(){
   document.getElementById('blinds-info').innerHTML='SB <strong>'+CFG.sb+'</strong> / BB <strong>'+CFG.bb+'</strong>';
 }
 
-// DECK
+// === DECK ===
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
 function newDeck(){let d=[];RANKS.forEach(r=>SUITS.forEach(s=>d.push({r,s})));return shuffle(d);}
 function cardStr(c){return c.r+c.s.sym;}
 function handStr(cards){return cards.map(cardStr).join(' ');}
 
-// EVAL
+// === HAND EVAL ===
 function evalHand(hole,boardC){
   const all=[...hole,...boardC];
   if(all.length<2)return[0,0,0,0,0];
@@ -365,42 +382,66 @@ function evalHand(hole,boardC){
 function compareHands(h1,h2){for(let i=0;i<Math.max(h1.length,h2.length);i++){const a=h1[i]||0,b=h2[i]||0;if(a>b)return 1;if(a<b)return -1;}return 0;}
 function handName(hole,boardC){if(!hole||hole.length<2)return '';return HAND_NAMES[evalHand(hole,boardC)[0]];}
 
-// CARD EL
-function cardEl(c,hidden){
+// === CARD ELEMENT ===
+function cardEl(c,hidden,size){
+  const sz=size||'sm';
   let e=document.createElement('div');
-  if(!c){e.className='card empty';return e;}
-  if(hidden){e.className='card back';e.innerHTML='<div class="suit">🂠</div>';return e;}
-  e.className='card '+c.s.color;
+  if(!c){e.className='card '+sz+' empty';return e;}
+  if(hidden){e.className='card '+sz+' back';e.innerHTML='<div class="suit" style="font-size:'+(sz==='lg'?'28':'20')+'px">🂠</div>';return e;}
+  e.className='card '+sz+' '+c.s.color;
   e.innerHTML='<div class="rank">'+c.r+'</div><div class="suit">'+c.s.sym+'</div>';
   return e;
 }
 
-// RENDER
-function renderBoard(){
-  let el=document.getElementById('board');el.innerHTML='';
-  board.forEach(c=>el.appendChild(cardEl(c,false)));
-  for(let i=board.length;i<5;i++)el.appendChild(cardEl(null));
-}
-function renderPlayers(showAll){
-  const list=document.getElementById('players-list');list.innerHTML='';
-  players.forEach(p=>{
-    const row=document.createElement('div');row.className='player-row';
+// === RENDER TABLE ===
+function renderTable(showAll){
+  // Board
+  const boardEl=document.getElementById('board');boardEl.innerHTML='';
+  board.forEach(c=>boardEl.appendChild(cardEl(c,false,'lg')));
+  for(let i=board.length;i<5;i++)boardEl.appendChild(cardEl(null,false,'lg'));
+
+  // Opponents (all except hero)
+  const oppTop=document.getElementById('opp-top');oppTop.innerHTML='';
+  const opps=players.filter(p=>!p.isHero);
+  opps.forEach(p=>{
+    const seat=document.createElement('div');
+    seat.className='opp-seat'+(p.folded?' opp-folded':'');
+    const cardsRow=document.createElement('div');cardsRow.className='opp-cards-row';
+    if(p.cards.length===2){
+      const reveal=showAll&&!p.folded;
+      p.cards.forEach(c=>cardsRow.appendChild(cardEl(c,!reveal,'sm')));
+    }
     const badges=[];
-    if(p.role==='dealer')badges.push('<span class="badge dealer">D</span>');
-    if(p.role==='sb')badges.push('<span class="badge sb">SB</span>');
-    if(p.role==='bb')badges.push('<span class="badge bb">BB</span>');
-    if(p.isHero)badges.push('<span class="badge hero">Герой</span>');
-    if(p.folded)badges.push('<span class="badge folded">Пас</span>');
-    const hn=board.length>=3&&p.cards.length===2&&!p.folded?handName(p.cards,board):'';
-    const cardsDiv=document.createElement('div');cardsDiv.className='player-cards-row';
-    if(p.cards.length===2) p.cards.forEach(c=>cardsDiv.appendChild(cardEl(c,!p.isHero&&!showAll)));
-    const info=document.createElement('div');info.className='player-info';
-    info.innerHTML='<div class="player-name-tag" style="color:'+p.color+'">'+p.name+' '+badges.join('')+'</div><div class="player-stack-tag">'+p.stack+' фишек'+(p.bet>0?' · '+p.bet+' в банк':'')+'</div>'+(hn?'<div class="player-hand-name" style="color:'+(p.isHero?'var(--green)':'var(--text3)')+'">'+hn+'</div>':'');
-    row.appendChild(info);row.appendChild(cardsDiv);
-    if(p.bet>0){const bt=document.createElement('div');bt.className='player-bet-tag';bt.textContent='💰'+p.bet;row.appendChild(bt);}
-    list.appendChild(row);
+    if(p.role==='dealer')badges.push('<span class="opp-badge d">D</span>');
+    if(p.role==='sb')badges.push('<span class="opp-badge sb">SB</span>');
+    if(p.role==='bb')badges.push('<span class="opp-badge bb">BB</span>');
+    const hn=showAll&&board.length>=3&&p.cards.length===2&&!p.folded?handName(p.cards,board):'';
+    seat.innerHTML='<div class="opp-label"><div class="opp-name" style="color:'+p.color+'">'+p.name+' '+badges.join('')+'</div></div>';
+    seat.appendChild(cardsRow);
+    const infoRow=document.createElement('div');infoRow.className='opp-label';
+    infoRow.innerHTML='<div class="opp-stack">'+p.stack+'</div>'+(p.folded?'<div style="font-size:10px;color:var(--red)">пас</div>':hn?'<div style="font-size:11px;color:var(--green);font-weight:600">'+hn+'</div>':'')+(p.bet>0?'<div class="opp-bet-chip">'+p.bet+'</div>':'');
+    seat.appendChild(infoRow);
+    oppTop.appendChild(seat);
   });
+
+  // Hero
+  const heroArea=document.getElementById('hero-area');heroArea.innerHTML='';
+  const h=players[0];
+  if(h){
+    const badges=[];
+    if(h.role==='dealer')badges.push('<span class="opp-badge d">D</span>');
+    if(h.role==='sb')badges.push('<span class="opp-badge sb">SB</span>');
+    if(h.role==='bb')badges.push('<span class="opp-badge bb">BB</span>');
+    const hn=board.length>=3&&h.cards.length===2?handName(h.cards,board):'';
+    const heroInfo=document.createElement('div');heroInfo.className='hero-info';
+    heroInfo.innerHTML='<div class="hero-name-tag">'+h.name+' '+badges.join('')+'</div><div class="hero-stack-tag">'+h.stack+' фишек</div>'+(hn?'<div class="hero-hand-tag">'+hn+'</div>':'')+(h.bet>0?'<div class="hero-bet-chip">💰'+h.bet+'</div>':'');
+    const cardsRow=document.createElement('div');cardsRow.className='hero-cards-row';
+    if(h.cards.length===2) h.cards.forEach(c=>cardsRow.appendChild(cardEl(c,false,'lg')));
+    heroArea.appendChild(heroInfo);
+    heroArea.appendChild(cardsRow);
+  }
 }
+
 function updateStats(){
   const h=players[0];
   document.getElementById('s-stack').textContent=h?h.stack:0;
@@ -409,6 +450,7 @@ function updateStats(){
   document.getElementById('pot-disp').textContent=pot;
 }
 function updatePhaseUI(){[0,1,2,3].forEach(i=>{document.getElementById('pd'+i).className='phase-dot'+(i<phase?' done':i===phase?' active':'');});}
+
 function estimateEquity(){
   const h=players[0];if(!h||h.cards.length<2)return 0.5;
   const score=evalHand(h.cards,board)[0];
@@ -419,6 +461,7 @@ function estimateEquity(){
   if(h.cards[0].s.sym===h.cards[1].s.sym)base+=0.03;
   return Math.min(0.95,Math.max(0.05,base));
 }
+
 function renderAdvice(){
   const h=players[0];if(!h||h.cards.length<2)return;
   const eq=estimateEquity();
@@ -435,7 +478,7 @@ function renderAdvice(){
     else if(maxR>=13)advice='Туз. Рейзи если вторая карта J+.';
     else if(maxR>=11&&isSuited)advice='Суитед картинки. Рейзи или колл.';
     else if(eq>0.55)advice='Рука выше среднего. Рейзи.';
-    else advice='Слабая рука. Фолд — экономь фишки.';
+    else advice='Слабая рука. Фолд.';
   }else{
     if(score>=6)advice=hn+' — монстр! Строй банк, бет 75%.';
     else if(score>=4)advice=hn+' — сильно. Бет 50-75%.';
@@ -443,31 +486,34 @@ function renderAdvice(){
     else if(score===1)advice='Пара. Бет 1/3 или чек.';
     else advice='Старшая карта. Чек или блеф.';
     const alive=players.filter(p=>!p.folded&&!p.isHero).length;
-    if(alive>1)advice+=' ('+alive+' против тебя)';
+    if(alive>0)advice+=' (против тебя: '+alive+')';
   }
   document.getElementById('advice-text').textContent=advice;
   const eqPct=Math.round(eq*100);
   document.getElementById('eq-fill').style.width=eqPct+'%';
   document.getElementById('eq-pct').textContent=eqPct+'%';
 }
+
 function log(msg,cls){
   const b=document.getElementById('log-box');
   const d=document.createElement('div');d.className='log-line '+(cls||'');d.textContent=msg;
   b.insertBefore(d,b.firstChild);
-  while(b.children.length>50)b.removeChild(b.lastChild);
+  while(b.children.length>60)b.removeChild(b.lastChild);
 }
+
 function setActions(btns){
   const el=document.getElementById('action-btns');el.innerHTML='';
   btns.forEach(b=>{const btn=document.createElement('button');btn.className='btn '+(b.cls||'');btn.textContent=b.label;btn.onclick=b.action;el.appendChild(btn);});
 }
 
-// GAME
+// === GAME LOGIC ===
 function dealNewHand(){
   if(!players.length)initPlayers();
-  deck=newDeck();board=[];phase=0;pot=0;betToCall=0;currentBet=0;actionLog=[];handsPlayed++;
+  deck=newDeck();board=[];phase=0;pot=0;betToCall=0;currentBet=0;actionLog=[];showdownMode=false;handsPlayed++;
   players.forEach(p=>{p.cards=[];p.folded=false;p.bet=0;p.role='';});
   const n=players.length;
-  dealerIdx=dealerIdx%n;players[dealerIdx].role='dealer';
+  dealerIdx=dealerIdx%n;
+  players[dealerIdx].role='dealer';
   const sbIdx=(dealerIdx+1)%n,bbIdx=(dealerIdx+2)%n;
   players[sbIdx].role='sb';players[bbIdx].role='bb';
   const sbAmt=Math.min(CFG.sb,players[sbIdx].stack),bbAmt=Math.min(CFG.bb,players[bbIdx].stack);
@@ -479,13 +525,16 @@ function dealNewHand(){
   actionLog.push('Префлоп: герой '+handStr(h.cards)+', SB='+sbAmt+', BB='+bbAmt);
   log('─── Раздача #'+handsPlayed+' ───','sep');
   log('Твои карты: '+handStr(h.cards)+' | SB:'+sbAmt+' BB:'+bbAmt,'you');
-  renderBoard();renderPlayers(false);updateStats();updatePhaseUI();renderAdvice();
   document.getElementById('result-overlay').className='result-overlay';
   showAnalysisState('empty');document.getElementById('analysis-badge').style.display='none';
-  setHeroActions();dealerIdx=(dealerIdx+1)%n;
+  renderTable(false);updateStats();updatePhaseUI();renderAdvice();
+  setHeroActions();
+  dealerIdx=(dealerIdx+1)%n;
 }
+
 function setHeroActions(){
-  const h=players[0],toCall=Math.max(0,betToCall-h.bet),betAmt=Math.max(CFG.bb,Math.round(pot*0.5));
+  const h=players[0],toCall=Math.max(0,betToCall-h.bet);
+  const betAmt=Math.max(CFG.bb,Math.round(pot*0.5));
   const actions=[{label:'Фолд',cls:'fold',action:()=>heroFold()}];
   if(toCall>0)actions.push({label:'Колл '+toCall,cls:'call',action:()=>heroCall()});
   else actions.push({label:'Чек',cls:'check',action:()=>heroCheck()});
@@ -494,38 +543,89 @@ function setHeroActions(){
   if(phase===3)actions.push({label:'Шоудаун',cls:'call',action:()=>showdown()});
   setActions(actions);
 }
-function heroFold(){players[0].folded=true;actionLog.push(phaseNames[phase]+' — Герой: Фолд');log('Ты: Фолд','you');endHand(false,'Ты сбросил карты.');}
-function heroCall(){const toCall=Math.min(betToCall-players[0].bet,players[0].stack);players[0].stack-=toCall;players[0].bet+=toCall;pot+=toCall;actionLog.push(phaseNames[phase]+' — Герой: Колл '+toCall);log('Ты: Колл '+toCall,'you');updateStats();opponentsAct(()=>advanceStreet());}
+
+function heroFold(){players[0].folded=true;actionLog.push(phaseNames[phase]+' — Герой: Фолд');log('Ты: Фолд','you');renderTable(false);endHand(false,'Ты сбросил карты.');}
+function heroCall(){
+  const toCall=Math.min(betToCall-players[0].bet,players[0].stack);
+  players[0].stack-=toCall;players[0].bet+=toCall;pot+=toCall;
+  actionLog.push(phaseNames[phase]+' — Герой: Колл '+toCall);log('Ты: Колл '+toCall,'you');
+  updateStats();renderTable(false);opponentsAct(()=>advanceStreet());
+}
 function heroCheck(){actionLog.push(phaseNames[phase]+' — Герой: Чек');log('Ты: Чек','you');opponentsAct(()=>advanceStreet());}
-function heroRaise(){const rAmt=Math.min(betToCall*2+CFG.bb,players[0].stack),toAdd=rAmt-players[0].bet;players[0].stack-=toAdd;players[0].bet=rAmt;pot+=toAdd;currentBet=rAmt;betToCall=rAmt;actionLog.push(phaseNames[phase]+' — Герой: Рейз '+rAmt);log('Ты: Рейз '+rAmt,'you');updateStats();opponentsAct(()=>advanceStreet());}
-function heroBet(){const bAmt=Math.min(Math.max(CFG.bb,Math.round(pot*0.5)),players[0].stack);players[0].stack-=bAmt;players[0].bet=bAmt;pot+=bAmt;currentBet=bAmt;betToCall=bAmt;actionLog.push(phaseNames[phase]+' — Герой: Бет '+bAmt);log('Ты: Бет '+bAmt,'you');updateStats();opponentsAct(()=>advanceStreet());}
+function heroRaise(){
+  const rAmt=Math.min(betToCall*2+CFG.bb,players[0].stack),toAdd=rAmt-players[0].bet;
+  players[0].stack-=toAdd;players[0].bet=rAmt;pot+=toAdd;currentBet=rAmt;betToCall=rAmt;
+  actionLog.push(phaseNames[phase]+' — Герой: Рейз '+rAmt);log('Ты: Рейз '+rAmt,'you');
+  updateStats();renderTable(false);opponentsAct(()=>advanceStreet());
+}
+function heroBet(){
+  const bAmt=Math.min(Math.max(CFG.bb,Math.round(pot*0.5)),players[0].stack);
+  players[0].stack-=bAmt;players[0].bet=bAmt;pot+=bAmt;currentBet=bAmt;betToCall=bAmt;
+  actionLog.push(phaseNames[phase]+' — Герой: Бет '+bAmt);log('Ты: Бет '+bAmt,'you');
+  updateStats();renderTable(false);opponentsAct(()=>advanceStreet());
+}
+
+// === OPPONENT AI — всегда активно участвует ===
 function opponentsAct(cb){
-  players.filter((p,i)=>i!==0&&!p.folded).forEach(p=>{
-    const toCall=Math.max(0,betToCall-p.bet),r=Math.random();
-    if(toCall>0){
-      if(r<0.28){p.folded=true;actionLog.push(phaseNames[phase]+' — '+p.name+': Фолд');log(p.name+': Фолд','opp');}
-      else if(r<0.82){const ca=Math.min(toCall,p.stack);p.stack-=ca;p.bet+=ca;pot+=ca;actionLog.push(phaseNames[phase]+' — '+p.name+': Колл '+ca);log(p.name+': Колл '+ca,'opp');}
-      else{const ra=Math.min(betToCall+CFG.bb,p.stack),add=ra-p.bet;p.stack-=add;p.bet=ra;pot+=add;betToCall=ra;currentBet=ra;actionLog.push(phaseNames[phase]+' — '+p.name+': Рейз '+ra);log(p.name+': Рейз '+ra,'opp');}
-    }else{
-      if(r<0.3){const ba=Math.min(Math.max(CFG.bb,Math.round(pot*0.35)),p.stack);p.stack-=ba;p.bet=ba;pot+=ba;betToCall=ba;currentBet=ba;actionLog.push(phaseNames[phase]+' — '+p.name+': Бет '+ba);log(p.name+': Бет '+ba,'opp');}
-      else{actionLog.push(phaseNames[phase]+' — '+p.name+': Чек');log(p.name+': Чек','opp');}
+  const active=players.filter((p,i)=>i!==0&&!p.folded);
+  active.forEach(p=>{
+    const toCall=Math.max(0,betToCall-p.bet);
+    const r=Math.random();
+    // Оппонент редко фолдит (только при больших рейзах с плохой рукой)
+    const handScore=evalHand(p.cards,board)[0];
+    const foldProb=toCall>0?(handScore<2&&toCall>CFG.bb*3?0.45:0.12):0;
+
+    if(r<foldProb){
+      p.folded=true;
+      actionLog.push(phaseNames[phase]+' — '+p.name+': Фолд');
+      log(p.name+': Фолд','opp');
+    } else if(toCall>0){
+      // Колл или рейз
+      if(r>0.82&&handScore>=2){
+        // Рейз с хорошей рукой
+        const ra=Math.min(betToCall+CFG.bb*2,p.stack);
+        const add=Math.max(0,ra-p.bet);
+        p.stack-=add;p.bet=ra;pot+=add;betToCall=ra;currentBet=ra;
+        actionLog.push(phaseNames[phase]+' — '+p.name+': Рейз '+ra);
+        log(p.name+': Рейз '+ra,'opp');
+      } else {
+        const ca=Math.min(toCall,p.stack);
+        p.stack-=ca;p.bet+=ca;pot+=ca;
+        actionLog.push(phaseNames[phase]+' — '+p.name+': Колл '+ca);
+        log(p.name+': Колл '+ca,'opp');
+      }
+    } else {
+      // Без обязательной ставки — бет или чек
+      if(r<0.55){
+        // Ставит — агрессивный ИИ
+        const ba=Math.min(Math.max(CFG.bb,Math.round(pot*(0.3+Math.random()*0.4))),p.stack);
+        p.stack-=ba;p.bet=ba;pot+=ba;betToCall=ba;currentBet=ba;
+        actionLog.push(phaseNames[phase]+' — '+p.name+': Бет '+ba);
+        log(p.name+': Бет '+ba,'opp');
+      } else {
+        actionLog.push(phaseNames[phase]+' — '+p.name+': Чек');
+        log(p.name+': Чек','opp');
+      }
     }
   });
-  updateStats();renderPlayers(false);
+  updateStats();renderTable(false);
   const stillIn=players.filter(p=>!p.folded);
   if(stillIn.length===1){endHand(stillIn[0].isHero,'Все соперники сбросили!');return;}
   cb();
 }
+
 function advanceStreet(){
   players.forEach(p=>p.bet=0);betToCall=0;currentBet=0;
   if(phase===0){phase=1;board.push(deck.pop(),deck.pop(),deck.pop());const b=board.slice(0,3).map(cardStr).join(' ');actionLog.push('Флоп: '+b);log('Флоп: '+b);}
   else if(phase===1){phase=2;board.push(deck.pop());actionLog.push('Тёрн: '+cardStr(board[3]));log('Тёрн: '+cardStr(board[3]));}
   else if(phase===2){phase=3;board.push(deck.pop());actionLog.push('Ривер: '+cardStr(board[4]));log('Ривер: '+cardStr(board[4]));}
   else{showdown();return;}
-  renderBoard();updatePhaseUI();renderPlayers(false);renderAdvice();setHeroActions();
+  renderTable(false);updatePhaseUI();renderAdvice();setHeroActions();
 }
+
 function showdown(){
-  renderPlayers(true);
+  showdownMode=true;
+  renderTable(true);
   const alive=players.filter(p=>!p.folded);
   let best=null,bestEv=null;
   alive.forEach(p=>{const ev=evalHand(p.cards,board);if(!bestEv||compareHands(ev,bestEv)>0){best=p;bestEv=ev;}});
@@ -534,36 +634,36 @@ function showdown(){
   if(tied)endHand(null,'Ничья!');
   else endHand(best&&best.isHero,best.name+' побеждает с '+HAND_NAMES[bestEv[0]]+'!');
 }
+
 function endHand(heroWins,msg){
-  renderPlayers(true);
+  renderTable(true);
   const overlay=document.getElementById('result-overlay');
   if(heroWins===true){players[0].stack+=pot;document.getElementById('result-title').textContent='🏆 Победа!';log('Ты выиграл '+pot+' фишек','win');}
   else if(heroWins===false){const alive=players.filter(p=>!p.folded);if(alive.length){const s=Math.floor(pot/alive.length);alive.forEach(p=>p.stack+=s);}document.getElementById('result-title').textContent='😔 Проигрыш';log('Проигрыш','lose');}
   else{const alive=players.filter(p=>!p.folded),s=Math.floor(pot/alive.length);alive.forEach(p=>p.stack+=s);document.getElementById('result-title').textContent='🤝 Ничья';}
   document.getElementById('result-sub').textContent=msg;
   overlay.className='result-overlay show';
-  pot=0;updateStats();renderPlayers(true);
+  pot=0;updateStats();
   setActions([{label:'🃏 Следующая раздача',cls:'deal',action:()=>dealNewHand()}]);
   requestAnalysis(heroWins,msg);
 }
 
-// ANALYSIS
+// === ANALYSIS ===
 function showAnalysisState(state){
   document.getElementById('state-empty').style.display=state==='empty'?'flex':'none';
   document.getElementById('state-loading').className='analysis-loading'+(state==='loading'?' show':'');
   document.getElementById('state-content').className='analysis-content'+(state==='content'?' show':'');
 }
+
 async function requestAnalysis(heroWins,outcome){
   const key=getApiKey();
   const content=document.getElementById('state-content');
   if(!key){
     showAnalysisState('content');
-    content.innerHTML='<div class="notice"><strong>🔑 Нет API ключа</strong>Нажми кнопку «Добавить ключ» справа вверху, вставь ключ от platform.openai.com — и разбор будет появляться автоматически после каждой раздачи.</div>';
-    document.getElementById('analysis-badge').style.display='none';
+    content.innerHTML='<div class="notice"><strong>🔑 Нет API ключа</strong>Нажми «Добавить ключ» справа вверху, вставь ключ от platform.openai.com — разбор появится автоматически после каждой раздачи.</div>';
     return;
   }
   showAnalysisState('loading');
-  document.getElementById('analysis-badge').style.display='none';
   const h=players[0];
   const oppCards=players.filter((p,i)=>i>0&&p.cards.length===2).map(p=>p.name+': '+handStr(p.cards)).join(', ');
   const prompt='Ты тренер по покеру. Разбери раздачу кратко и конкретно.\n\nКарты героя: '+handStr(h.cards)+'\nОппоненты: '+oppCards+'\nБорд: '+(board.length>0?handStr(board):'не дошло до флопа')+'\nБлайнды: SB='+CFG.sb+' BB='+CFG.bb+', игроков: '+CFG.players+'\nДействия: '+actionLog.join(' | ')+'\nИтог: '+outcome+'\n\nВерни ТОЛЬКО JSON без markdown:\n{"streets":[{"name":"Префлоп","action":"кратко что сделал","verdict":"ok|bad|neutral","comment":"1-2 предложения"},{"name":"Флоп","action":"...","verdict":"...","comment":"..."},{"name":"Тёрн","action":"...","verdict":"...","comment":"..."},{"name":"Ривер","action":"...","verdict":"...","comment":"..."}],"outcome":"'+(heroWins===true?'win':heroWins===false?'lose':'draw')+'","summary":"главный урок 1-2 предложения"}\nВключай только сыгранные улицы.';
@@ -571,7 +671,7 @@ async function requestAnalysis(heroWins,outcome){
     const resp=await fetch('https://api.openai.com/v1/chat/completions',{
       method:'POST',
       headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},
-      body:JSON.stringify({model:'gpt-4o-mini',messages:[{role:'system',content:'Ты тренер по покеру. Отвечай только JSON без markdown и пояснений.'},{role:'user',content:prompt}],max_tokens:1000,temperature:0.3})
+      body:JSON.stringify({model:'gpt-4o-mini',messages:[{role:'system',content:'Ты тренер по покеру. Отвечай только JSON без markdown.'},{role:'user',content:prompt}],max_tokens:1000,temperature:0.3})
     });
     if(!resp.ok){const e=await resp.json();throw new Error(e.error?.message||'Ошибка API '+resp.status);}
     const data=await resp.json();
@@ -583,11 +683,12 @@ async function requestAnalysis(heroWins,outcome){
     content.innerHTML='<div class="notice"><strong>⚠️ Ошибка</strong>'+e.message+'</div>';
   }
 }
+
 function renderAnalysis(data){
   const content=document.getElementById('state-content');content.innerHTML='';
   const h=players[0];
-  const sumEl=document.createElement('div');sumEl.className='hand-summary';
   const heroHN=board.length>=3?handName(h.cards,board):'—';
+  const sumEl=document.createElement('div');sumEl.className='hand-summary';
   sumEl.innerHTML='<div class="summary-card"><div class="summary-card-label">Твои карты</div><div class="summary-card-value">'+handStr(h.cards)+'</div><div style="font-size:12px;color:var(--text3);margin-top:3px">'+heroHN+'</div></div><div class="summary-card"><div class="summary-card-label">Стол</div><div class="summary-card-value">'+CFG.players+' игроков</div><div style="font-size:12px;color:var(--text3);margin-top:3px">SB '+CFG.sb+' / BB '+CFG.bb+'</div></div>'+(board.length>0?'<div class="summary-card" style="grid-column:1/-1"><div class="summary-card-label">Борд</div><div class="summary-card-value">'+handStr(board)+'</div></div>':'');
   content.appendChild(sumEl);
   (data.streets||[]).forEach(s=>{
@@ -598,17 +699,17 @@ function renderAnalysis(data){
   });
   const oc=document.createElement('div');
   oc.className='outcome-block '+(data.outcome==='win'?'win':data.outcome==='lose'?'lose':'');
-  const ot=data.outcome==='win'?'Победа!':data.outcome==='lose'?'Проигрыш':'Ничья';
-  oc.innerHTML='<div class="outcome-title">'+ot+'</div><div class="outcome-text">'+(data.summary||'')+'</div>';
+  oc.innerHTML='<div class="outcome-title">'+(data.outcome==='win'?'Победа!':data.outcome==='lose'?'Проигрыш':'Ничья')+'</div><div class="outcome-text">'+(data.summary||'')+'</div>';
   content.appendChild(oc);
   showAnalysisState('content');
   document.getElementById('analysis-badge').style.display='inline-block';
 }
 
-// INIT
+// === INIT ===
 updateApiKeyBtn();
 initPlayers();
-renderBoard();renderPlayers(false);updateStats();
+renderTable(false);
+updateStats();
 </script>
 </body>
 </html>
