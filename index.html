@@ -326,7 +326,7 @@ const phaseNames=['Префлоп','Флоп','Тёрн','Ривер'];
 let deck=[],board=[],phase=0,pot=0,handsPlayed=0,actionLog=[];
 let currentBet=0,players=[],dealerIdx=0;
 let showdownMode=false;
-let sessionNet=0,heroStackAtDeal=0,handHistory=[];
+let sessionNet=0,heroStackAtDeal=0,handHistory=[],handToken=0;
 
 // === PERSISTENCE ===
 const STORE_KEY='pt_state_v1';
@@ -529,7 +529,9 @@ function updatePhaseUI(){[0,1,2,3].forEach(i=>{document.getElementById('pd'+i).c
 // Быстрая грубая оценка — только для текста совета до того, как посчитается Monte-Carlo
 function quickEquity(){
   const h=players[0];if(!h||h.cards.length<2)return 0.5;
-  const score=evalHand(h.cards,board)[0];
+  // На префлопе борда нет: evalHand() достроил бы руку тремя «2», выдумав тройку —
+  // поэтому очки за сложившуюся комбинацию считаем только когда борд реально есть.
+  const score=board.length>=3?evalHand(h.cards,board)[0]:0;
   const hr=h.cards.map(c=>RANK_VAL[c.r]);
   let base=0.5+score*0.06-players.filter(p=>!p.folded&&!p.isHero).length*0.03;
   if(Math.max(...hr)>=13)base+=0.05;
@@ -657,6 +659,7 @@ function postBlind(idx,amt){
 
 function dealNewHand(){
   if(!players.length)initPlayers();
+  handToken++;                 // новая раздача — старый асинхронный разбор больше не актуален
   rebuyIfBusted();
   deck=newDeck();board=[];phase=0;pot=0;currentBet=0;minRaise=CFG.bb;actionLog=[];
   showdownMode=false;handOver=false;awaitingHero=false;handsPlayed++;
@@ -913,7 +916,7 @@ function concludeHand(sub){
   pot=0; players.forEach(p=>{p.bet=0;});
   updateStats(); saveState();
   setActions([{label:'🃏 Следующая раздача',cls:'deal',action:dealNewHand}]);
-  requestAnalysis(delta>0?true:delta<0?false:null, sub);
+  requestAnalysis(delta>0?true:delta<0?false:null, sub, handToken);
 }
 
 // === ANALYSIS ===
@@ -923,7 +926,7 @@ function showAnalysisState(state){
   document.getElementById('state-content').className='analysis-content'+(state==='content'?' show':'');
 }
 
-async function requestAnalysis(heroWins,outcome){
+async function requestAnalysis(heroWins,outcome,token){
   const key=getApiKey();
   const content=document.getElementById('state-content');
   if(!key){
@@ -945,8 +948,10 @@ async function requestAnalysis(heroWins,outcome){
     const data=await resp.json();
     const text=data.choices?.[0]?.message?.content||'';
     const parsed=JSON.parse(text.replace(/```json|```/g,'').trim());
+    if(token!==handToken)return;   // пока ждали ответ, началась новая раздача — этот разбор больше не актуален
     renderAnalysis(parsed);
   }catch(e){
+    if(token!==handToken)return;
     showAnalysisState('content');
     content.innerHTML='<div class="notice"><strong>⚠️ Ошибка</strong>'+e.message+'</div>';
   }
