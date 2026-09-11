@@ -599,32 +599,34 @@ function renderAdvice(){
   let advice='';
   if(phase===0){
     const n=players.filter(p=>!p.folded).length;
+    const late=h.role==='dealer';            // на кнопке — лучшая позиция за столом
     if(isPair&&maxR>=11)advice='Сильная пара (JJ+). Рейзи — за столом '+n+' игроков.';
     else if(isPair&&maxR>=8)advice='Средняя пара. Рейзи для инициативы.';
     else if(isPair)advice='Малая пара. Колл, цель — сет на флопе.';
     else if(maxR>=14){
       const minR=Math.min(...hr),kicker='A'+RANKS[minR-2];
       if(minR>=11)advice='Сильный туз ('+kicker+'+). Рейзи.';
-      else if(isSuited)advice='Одномастный туз ('+kicker+'). Рейзи или колл — есть потенциал на флеш.';
-      else if(minR>=8)advice='Туз со средним кикером ('+kicker+'). Рейзи в поздней позиции, иначе колл.';
-      else advice='Слабый туз без масти ('+kicker+'). Осторожно — небольшой колл или фолд против рейза.';
+      else if(isSuited)advice='Одномастный туз ('+kicker+') — рейзи, в запасе флеш-дро.';
+      else if(minR>=8)advice='Туз со средним кикером ('+kicker+'). '+(late?'Рейзи.':'Колл.');
+      else advice='Слабый туз без масти ('+kicker+'). '+(late?'Рейзи (стил).':'Фолд.');
     }
     else if(maxR===13){
       const minR=Math.min(...hr);
       if(minR>=10)advice='Король с картинкой. Рейзи.';
-      else if(isSuited)advice='Одномастный король. Рейзи в поздней позиции.';
-      else advice='Король со слабым кикером. Рейзи в позиции, иначе осторожно.';
+      else if(isSuited)advice='Одномастный король. Рейзи.';
+      else advice='Король без масти, слабый кикер. '+(late?'Рейзи (стил).':'Фолд.');
     }
-    else if(maxR>=11&&isSuited)advice='Суитед картинки. Рейзи или колл.';
+    else if(maxR>=11&&isSuited)advice='Одномастные картинки. Рейзи.';
     else if(eq>0.55)advice='Рука выше среднего. Рейзи.';
     else advice='Слабая рука. Фолд.';
   }else{
-    if(score>=6)advice=hn+' — монстр! Строй банк, бет 75%.';
-    else if(score>=4)advice=hn+' — сильно. Бет 50-75%.';
-    else if(score>=2)advice=hn+'. Небольшой бет или чек.';
-    else if(score===1)advice='Пара. Бет 1/3 или чек.';
-    else advice='Старшая карта. Чек или блеф.';
     const alive=players.filter(p=>!p.folded&&!p.isHero).length;
+    const heroLast=alive<=1;                 // хедз-ап на улице — проще довести тонкий бет/блеф
+    if(score>=6)advice=hn+' — монстр! Бет 75% банка.';
+    else if(score>=4)advice=hn+' — сильно. Бет 50-75% банка.';
+    else if(score>=2)advice=hn+'. Бет 30-50% банка.';
+    else if(score===1)advice='Пара. '+(heroLast?'Бет 1/3 банка.':'Чек.');
+    else advice='Старшая карта. '+(heroLast?'Блеф-бет 40-50% банка.':'Чек.');
     if(alive>0)advice+=' (против тебя: '+alive+')';
   }
   document.getElementById('advice-text').textContent=advice;
