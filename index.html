@@ -600,6 +600,10 @@ function renderAdvice(){
   if(phase===0){
     const n=players.filter(p=>!p.folded).length;
     const late=h.role==='dealer';            // на кнопке — лучшая позиция за столом
+    const toCall=Math.max(0,currentBet-h.bet);
+    const cheap=toCall>0&&toCall<=Math.max(CFG.bb,Math.round(pot*0.15));  // дешёвый колл относительно банка
+    const gap=Math.abs(hr[0]-hr[1]);
+    const connected=!isPair&&maxR>=10&&Math.min(...hr)>=9&&gap<=2;        // JT, QJ, QT, T9 и т.п. — стрит-потенциал
     if(isPair&&maxR>=11)advice='Сильная пара (JJ+). Рейзи — за столом '+n+' игроков.';
     else if(isPair&&maxR>=8)advice='Средняя пара. Рейзи для инициативы.';
     else if(isPair)advice='Малая пара. Колл, цель — сет на флопе.';
@@ -617,7 +621,16 @@ function renderAdvice(){
       else advice='Король без масти, слабый кикер. '+(late?'Рейзи (стил).':'Фолд.');
     }
     else if(maxR>=11&&isSuited)advice='Одномастные картинки. Рейзи.';
+    else if(connected){
+      const tag=(isSuited?'Одномастные связанные карты':'Связанные картинки')+' — стрит-потенциал.';
+      const priceRatio=toCall/((pot+toCall)||1);
+      if(toCall<=0)advice=tag+' '+(late?'Рейзи.':'Чек.');
+      else if(priceRatio<=0.35)advice=tag+' '+(late?'Рейзи.':'Колл.');
+      else advice=tag+' Фолд — колл слишком дорогой.';
+    }
     else if(eq>0.55)advice='Рука выше среднего. Рейзи.';
+    else if(toCall<=0)advice='Слабая рука, но флоп бесплатный. Чек.';
+    else if(cheap)advice='Слабая рука, но колл всего '+toCall+' в банк '+pot+'. Колл.';
     else advice='Слабая рука. Фолд.';
   }else{
     const alive=players.filter(p=>!p.folded&&!p.isHero).length;
@@ -725,7 +738,7 @@ function driveBetting(){
   if(idx<0){advanceStreetOrShowdown();return;}
   toActIdx=idx;
   renderTable(showdownMode);updateStats();
-  if(players[idx].isHero){ awaitingHero=true; setHeroActions(); return; }
+  if(players[idx].isHero){ awaitingHero=true; renderAdvice(); setHeroActions(); return; }
   awaitingHero=false; setActions([]);
   setTimeout(()=>{
     if(handOver)return;
