@@ -602,8 +602,19 @@ function renderAdvice(){
     if(isPair&&maxR>=11)advice='Сильная пара (JJ+). Рейзи — за столом '+n+' игроков.';
     else if(isPair&&maxR>=8)advice='Средняя пара. Рейзи для инициативы.';
     else if(isPair)advice='Малая пара. Колл, цель — сет на флопе.';
-    else if(maxR>=14)advice='Туз. Рейзи если вторая карта J+.';
-    else if(maxR===13){const minR=Math.min(...hr);advice=minR>=10?'Король с картинкой. Рейзи.':'Король со слабым кикером. Рейзи в позиции, иначе осторожно.';}
+    else if(maxR>=14){
+      const minR=Math.min(...hr),kicker='A'+RANKS[minR-2];
+      if(minR>=11)advice='Сильный туз ('+kicker+'+). Рейзи.';
+      else if(isSuited)advice='Одномастный туз ('+kicker+'). Рейзи или колл — есть потенциал на флеш.';
+      else if(minR>=8)advice='Туз со средним кикером ('+kicker+'). Рейзи в поздней позиции, иначе колл.';
+      else advice='Слабый туз без масти ('+kicker+'). Осторожно — небольшой колл или фолд против рейза.';
+    }
+    else if(maxR===13){
+      const minR=Math.min(...hr);
+      if(minR>=10)advice='Король с картинкой. Рейзи.';
+      else if(isSuited)advice='Одномастный король. Рейзи в поздней позиции.';
+      else advice='Король со слабым кикером. Рейзи в позиции, иначе осторожно.';
+    }
     else if(maxR>=11&&isSuited)advice='Суитед картинки. Рейзи или колл.';
     else if(eq>0.55)advice='Рука выше среднего. Рейзи.';
     else advice='Слабая рука. Фолд.';
