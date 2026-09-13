@@ -599,13 +599,13 @@ function renderAdvice(){
     }
     else if(maxR===13){
       const minR=Math.min(...hr);
-      if(minR>=10)advice='Король с картинкой. Рейзи.';
+      if(minR>=10)advice='Король с высокой картой. Рейзи.';
       else if(isSuited)advice='Одномастный король. Рейзи.';
       else advice='Король без масти, слабый кикер. '+(late?'Рейзи (стил).':'Фолд.');
     }
-    else if(maxR>=11&&isSuited)advice='Одномастные картинки. Рейзи.';
+    else if(Math.min(...hr)>=11&&isSuited)advice='Одномастные картинки. Рейзи.';
     else if(connected){
-      const tag=(isSuited?'Одномастные связанные карты':'Связанные картинки')+' — стрит-потенциал.';
+      const tag=(isSuited?'Одномастные связанные карты':'Связанные карты')+' — стрит-потенциал.';
       const priceRatio=toCall/((pot+toCall)||1);
       if(toCall<=0)advice=tag+' '+(late?'Рейзи.':'Чек.');
       else if(priceRatio<=0.35)advice=tag+' '+(late?'Рейзи.':'Колл.');
