@@ -359,6 +359,7 @@ let deck=[],board=[],phase=0,pot=0,handsPlayed=0,actionLog=[];
 let currentBet=0,players=[],dealerIdx=0;
 let showdownMode=false;
 let winningCards=new Set();
+let heroFoldSnapshot=null;
 let sessionNet=0,heroStackAtDeal=0,handHistory=[],handToken=0;
 
 // === PERSISTENCE ===
@@ -731,6 +732,7 @@ function dealNewHand(){
   deck=newDeck();board=[];phase=0;pot=0;currentBet=0;minRaise=CFG.bb;actionLog=[];
   showdownMode=false;handOver=false;awaitingHero=false;handsPlayed++;
   winningCards.clear();
+  heroFoldSnapshot=null;
   players.forEach(p=>{p.cards=[];p.folded=false;p.bet=0;p.allIn=false;p.acted=false;p.contributed=0;p.role='';});
   const n=players.length;
   btnIdx=dealerIdx%n;
@@ -829,6 +831,7 @@ function setHeroActions(){
 function heroFold(){
   const h=players[0]; h.folded=true; h.acted=true;
   actionLog.push(phaseNames[phase]+' — Герой: Фолд'); log('Ты: Фолд','you');
+  heroFoldSnapshot={board:[...board],actions:[...actionLog],phase};
   awaitingHero=false; toActIdx=1%players.length;
   renderTable(showdownMode); driveBetting();
 }
@@ -987,12 +990,7 @@ function concludeHand(sub){
   pot=0; players.forEach(p=>{p.bet=0;});
   updateStats(); saveState();
   setActions([{label:'🃏 Следующая раздача',cls:'deal',action:dealNewHand}]);
-  if(h.folded){
-    showAnalysisState('content');
-    document.getElementById('state-content').innerHTML='<div class="notice">Разбор пропущен: ты сбросил карты.</div>';
-  }else{
-    requestAnalysis(delta>0?true:delta<0?false:null, sub, handToken);
-  }
+  requestAnalysis(delta>0?true:delta<0?false:null, sub, handToken);
 }
 
 // === ANALYSIS ===
@@ -1003,7 +1001,11 @@ function showAnalysisState(state){
 }
 
 async function requestAnalysis(heroWins,outcome,token){
-  if(players[0]?.folded)return;
+  const snapshot=heroFoldSnapshot;
+  const analysisBoard=snapshot?snapshot.board:[...board];
+  const analysisActions=snapshot?snapshot.actions:[...actionLog];
+  const allowedStreets=phaseNames.slice(0,(snapshot?snapshot.phase:phase)+1);
+  if(snapshot){heroWins=false;outcome="Герой: фолд на улице «"+phaseNames[snapshot.phase]+"».";}
   const key=getApiKey();
   const content=document.getElementById('state-content');
   if(!key){
@@ -1013,8 +1015,8 @@ async function requestAnalysis(heroWins,outcome,token){
   }
   showAnalysisState('loading');
   const h=players[0];
-  const oppCards=players.filter((p,i)=>i>0&&p.cards.length===2).map(p=>p.name+': '+handStr(p.cards)).join(', ');
-  const prompt='Ты тренер по покеру. Разбери раздачу кратко и конкретно.\n\nКарты героя: '+handStr(h.cards)+'\nОппоненты: '+oppCards+'\nБорд: '+(board.length>0?handStr(board):'не дошло до флопа')+'\nБлайнды: SB='+CFG.sb+' BB='+CFG.bb+', игроков: '+CFG.players+'\nДействия: '+actionLog.join(' | ')+'\nИтог: '+outcome+'\n\nВерни ТОЛЬКО JSON без markdown:\n{"streets":[{"name":"Префлоп","action":"кратко что сделал","verdict":"ok|bad|neutral","comment":"1-2 предложения"},{"name":"Флоп","action":"...","verdict":"...","comment":"..."},{"name":"Тёрн","action":"...","verdict":"...","comment":"..."},{"name":"Ривер","action":"...","verdict":"...","comment":"..."}],"outcome":"'+(heroWins===true?'win':heroWins===false?'lose':'draw')+'","summary":"главный урок 1-2 предложения"}\nВключай только сыгранные улицы.';
+  const oppCards=snapshot?'Карты соперников неизвестны на момент фолда':players.filter((p,i)=>i>0&&p.cards.length===2).map(p=>p.name+': '+handStr(p.cards)).join(', ');
+  const prompt='Ты тренер по покеру. Разбери раздачу кратко и конкретно.\n\nКарты героя: '+handStr(h.cards)+'\nОппоненты: '+oppCards+'\nБорд: '+(analysisBoard.length>0?handStr(analysisBoard):'не дошло до флопа')+'\nБлайнды: SB='+CFG.sb+' BB='+CFG.bb+', игроков: '+CFG.players+'\nДействия: '+analysisActions.join(' | ')+'\nИтог: '+outcome+'\n\nВерни ТОЛЬКО JSON без markdown:\n{"streets":[{"name":"Префлоп","action":"кратко что сделал","verdict":"ok|bad|neutral","comment":"1-2 предложения"},{"name":"Флоп","action":"...","verdict":"...","comment":"..."},{"name":"Тёрн","action":"...","verdict":"...","comment":"..."},{"name":"Ривер","action":"...","verdict":"...","comment":"..."}],"outcome":"'+(heroWins===true?'win':heroWins===false?'lose':'draw')+'","summary":"главный урок 1-2 предложения"}\nДопустимые улицы: '+allowedStreets.join(', ')+'. Включай только их. '+(snapshot?'Разбери решения героя до фолда включительно, в том числе сам фолд. Не разбирай дальнейшую игру соперников и не придумывай последующие карты или действия.':'Включай только сыгранные улицы.');
   try{
     const resp=await fetch('https://api.openai.com/v1/chat/completions',{
       method:'POST',
@@ -1026,7 +1028,8 @@ async function requestAnalysis(heroWins,outcome,token){
     const text=data.choices?.[0]?.message?.content||'';
     const parsed=JSON.parse(text.replace(/```json|```/g,'').trim());
     if(token!==handToken)return;   // пока ждали ответ, началась новая раздача — этот разбор больше не актуален
-    renderAnalysis(parsed);
+    parsed.streets=(parsed.streets||[]).filter(street=>allowedStreets.includes(street.name));
+    renderAnalysis(parsed,analysisBoard);
   }catch(e){
     if(token!==handToken)return;
     showAnalysisState('content');
@@ -1034,12 +1037,12 @@ async function requestAnalysis(heroWins,outcome,token){
   }
 }
 
-function renderAnalysis(data){
+function renderAnalysis(data,analysisBoard=board){
   const content=document.getElementById('state-content');content.innerHTML='';
   const h=players[0];
-  const heroHN=board.length>=3?handName(h.cards,board):'—';
+  const heroHN=analysisBoard.length>=3?handName(h.cards,analysisBoard):'—';
   const sumEl=document.createElement('div');sumEl.className='hand-summary';
-  sumEl.innerHTML='<div class="summary-card"><div class="summary-card-label">Твои карты</div><div class="summary-card-value">'+handStr(h.cards)+'</div><div style="font-size:12px;color:var(--text3);margin-top:3px">'+heroHN+'</div></div><div class="summary-card"><div class="summary-card-label">Стол</div><div class="summary-card-value">'+CFG.players+' игроков</div><div style="font-size:12px;color:var(--text3);margin-top:3px">SB '+CFG.sb+' / BB '+CFG.bb+'</div></div>'+(board.length>0?'<div class="summary-card" style="grid-column:1/-1"><div class="summary-card-label">Борд</div><div class="summary-card-value">'+handStr(board)+'</div></div>':'');
+  sumEl.innerHTML='<div class="summary-card"><div class="summary-card-label">Твои карты</div><div class="summary-card-value">'+handStr(h.cards)+'</div><div style="font-size:12px;color:var(--text3);margin-top:3px">'+heroHN+'</div></div><div class="summary-card"><div class="summary-card-label">Стол</div><div class="summary-card-value">'+CFG.players+' игроков</div><div style="font-size:12px;color:var(--text3);margin-top:3px">SB '+CFG.sb+' / BB '+CFG.bb+'</div></div>'+(analysisBoard.length>0?'<div class="summary-card" style="grid-column:1/-1"><div class="summary-card-label">Борд</div><div class="summary-card-value">'+handStr(analysisBoard)+'</div></div>':'');
   content.appendChild(sumEl);
   (data.streets||[]).forEach(s=>{
     const block=document.createElement('div');block.className='street-block';
