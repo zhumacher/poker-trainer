@@ -186,6 +186,53 @@ body { background: var(--bg); color: var(--text); font-family: -apple-system, Bl
 ::-webkit-scrollbar { width: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+/* Narrow screens use a single, vertically scrolling page. */
+@media (max-width: 900px) {
+  html, body { height: auto; min-height: 100%; overflow: visible; }
+  body { min-height: 100dvh; }
+  .header { flex-wrap: wrap; gap: 6px; padding: 8px 12px; }
+  .header-title { width: 100%; font-size: 16px; }
+  .stats-bar { width: 100%; margin-left: 0; justify-content: space-between; gap: 8px; }
+  .stat { min-width: 0; align-items: flex-start; }
+  .stat-val { font-size: 15px; overflow-wrap: anywhere; }
+  .stat-lbl { font-size: 10px; }
+  .hdr-btn { min-height: 44px; padding: 7px 10px; }
+  .main { flex: none; flex-direction: column; overflow: visible; }
+  .game-col { width: 100%; min-width: 0; overflow: visible; border-right: 0; }
+  .blinds-bar { padding: 5px 12px; }
+  .table-wrap { padding: 10px 8px; }
+  .table-felt { min-height: 300px; border-radius: 48px; }
+  .opp-top { flex-wrap: wrap; padding: 12px 8px 6px; gap: 10px 6px; }
+  .opp-seat { flex: 0 1 calc((100% - 12px) / 3); min-width: 0; }
+  .opp-label { max-width: 100%; overflow-wrap: anywhere; }
+  .board-cards { gap: 5px; }
+  .hero-area { padding: 6px 8px 12px; gap: 12px; }
+  .hero-info { min-width: 0; text-align: center; overflow-wrap: anywhere; }
+  .hero-cards-row { flex-shrink: 0; gap: 5px; }
+  .result-overlay { border-radius: 48px; }
+  .result-title { font-size: 24px; text-align: center; }
+  .actions-section { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 10px 12px; }
+  .btn { min-width: 0; min-height: 46px; white-space: normal; overflow-wrap: anywhere; }
+  .btn:only-child { grid-column: 1 / -1; }
+  .log-section { flex: none; max-height: 180px; }
+  .analysis-col { flex: none; overflow: visible; }
+  .analysis-header { flex-wrap: wrap; padding: 12px; }
+  .api-key-btn { min-height: 44px; white-space: normal; }
+  .analysis-body { flex: none; overflow: visible; padding: 12px; overflow-wrap: anywhere; }
+  .analysis-empty, .analysis-loading { min-height: 180px; }
+  .modal-overlay { padding: 12px; }
+  .modal { max-height: calc(100dvh - 24px); overflow-y: auto; padding: 20px; }
+  .modal input { font-size: 16px; }
+}
+@media (max-width: 480px) {
+  :root {
+    --card-w: clamp(40px, 12vw, 56px);
+    --card-h: clamp(58px, 17vw, 80px);
+    --card-w-sm: clamp(28px, 8vw, 36px);
+    --card-h-sm: clamp(40px, 11.5vw, 52px);
+  }
+}
 </style>
 </head>
 <body>
