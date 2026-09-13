@@ -55,12 +55,8 @@ body { background: var(--bg); color: var(--text); font-family: -apple-system, Bl
 /* GAME COLUMN */
 .game-col { width: 520px; min-width: 340px; flex-shrink: 0; display: flex; flex-direction: column; border-right: 1px solid var(--border); overflow: hidden; }
 
-/* PHASE BAR */
-.phase-bar { padding: 9px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
-.phase-item { display: flex; align-items: center; gap: 5px; font-size: 13px; color: var(--text3); }
-.phase-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border2); flex-shrink: 0; transition: background 0.3s; }
-.phase-dot.active { background: var(--accent); }
-.phase-dot.done { background: var(--green); }
+/* BLINDS BAR */
+.blinds-bar { padding: 9px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
 .blinds-info { margin-left: auto; font-size: 13px; color: var(--text3); white-space: nowrap; }
 .blinds-info strong { color: var(--gold); }
 
@@ -119,8 +115,6 @@ body { background: var(--bg); color: var(--text); font-family: -apple-system, Bl
 .card.empty { background: rgba(255,255,255,0.07); border: 2px dashed rgba(255,255,255,0.18); box-shadow: none; }
 
 /* SUIT LEGEND */
-.suit-legend { display: flex; gap: 12px; padding: 7px 16px; border-bottom: 1px solid var(--border); flex-shrink: 0; background: rgba(0,0,0,0.2); }
-.suit-legend span { font-size: 13px; }
 
 /* EQUITY */
 .equity-section { padding: 9px 16px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
@@ -245,11 +239,7 @@ body { background: var(--bg); color: var(--text); font-family: -apple-system, Bl
 <div class="main">
   <!-- GAME -->
   <div class="game-col">
-    <div class="phase-bar">
-      <div class="phase-item"><div class="phase-dot active" id="pd0"></div>Префлоп</div>
-      <div class="phase-item"><div class="phase-dot" id="pd1"></div>Флоп</div>
-      <div class="phase-item"><div class="phase-dot" id="pd2"></div>Тёрн</div>
-      <div class="phase-item"><div class="phase-dot" id="pd3"></div>Ривер</div>
+    <div class="blinds-bar">
       <div class="blinds-info" id="blinds-info">SB <strong>5</strong> / BB <strong>10</strong></div>
     </div>
 
@@ -269,12 +259,6 @@ body { background: var(--bg); color: var(--text); font-family: -apple-system, Bl
       </div>
     </div>
 
-    <div class="suit-legend">
-      <span style="color:#111;background:#ddd;padding:1px 6px;border-radius:3px">♠ пики</span>
-      <span style="color:#c0392b">♥ червы</span>
-      <span style="color:#c0392b">♦ бубны</span>
-      <span style="color:#111;background:#ddd;padding:1px 6px;border-radius:3px">♣ трефы</span>
-    </div>
 
     <div class="equity-section">
       <div class="equity-label"><span>Эквити героя <span style="color:var(--text3)">· симуляция</span></span><span id="eq-pct" style="color:var(--accent);font-weight:700">50%</span></div>
@@ -524,7 +508,6 @@ function updateStats(){
     netEl.style.color=sessionNet>0?'var(--green)':sessionNet<0?'var(--red)':'var(--gold)';
   }
 }
-function updatePhaseUI(){[0,1,2,3].forEach(i=>{document.getElementById('pd'+i).className='phase-dot'+(i<phase?' done':i===phase?' active':'');});}
 
 // Быстрая грубая оценка — только для текста совета до того, как посчитается Monte-Carlo
 function quickEquity(){
@@ -707,7 +690,7 @@ function dealNewHand(){
   showAnalysisState('empty');document.getElementById('analysis-badge').style.display='none';
   toActIdx = n===2 ? btnIdx : (btnIdx+3)%n;            // префлоп: слева от BB (в HU — кнопка/SB)
   dealerIdx=(btnIdx+1)%n;                              // кнопка на следующую раздачу
-  renderTable(false);updateStats();updatePhaseUI();renderAdvice();
+  renderTable(false);updateStats();renderAdvice();
   driveBetting();
 }
 
@@ -857,7 +840,7 @@ function advanceStreetOrShowdown(){
   dealStreet();
   const noMoreBetting = actorsLeft()<2;
   if(noMoreBetting)showdownMode=true;
-  renderTable(showdownMode); updatePhaseUI(); renderAdvice();
+  renderTable(showdownMode); renderAdvice();
   if(noMoreBetting){
     setActions([]);
     setTimeout(()=>advanceStreetOrShowdown(),750);
@@ -1010,7 +993,7 @@ const saved=bootState();
 initPlayers(saved?saved.stack:null);
 renderTable(false);
 updateStats();
-updatePhaseUI();
+
 </script>
 </body>
 </html>
