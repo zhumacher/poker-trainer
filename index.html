@@ -93,7 +93,8 @@ body { background: var(--bg); color: var(--text); font-family: -apple-system, Bl
 .hero-bet-chip { background: rgba(0,0,0,0.5); border: 1px solid var(--gold); color: var(--gold); font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 10px; }
 
 /* RESULT OVERLAY */
-.result-overlay { display: none; position: absolute; inset: 0; background: rgba(0,0,0,0.78); border-radius: 120px; align-items: center; justify-content: center; flex-direction: column; gap: 6px; z-index: 10; }
+.result-overlay { display: none; align-items: center; justify-content: center; flex-direction: column; gap: 6px; padding: 12px 0 0; }
+.card.winning { outline: 3px solid var(--gold); box-shadow: 0 0 14px rgba(240,180,41,0.55); }
 .result-overlay.show { display: flex; }
 .result-title { font-size: 28px; font-weight: 700; color: #fff; }
 .result-sub { font-size: 13px; color: rgba(255,255,255,0.65); text-align: center; padding: 0 28px; }
@@ -299,11 +300,11 @@ body { background: var(--bg); color: var(--text); font-family: -apple-system, Bl
           <div class="pot-badge">Банк: <span id="pot-disp">0</span></div>
         </div>
         <div class="hero-area" id="hero-area"></div>
-        <div class="result-overlay" id="result-overlay">
+      </div>
+        <div class="result-overlay" id="result-overlay" role="status">
           <div class="result-title" id="result-title"></div>
           <div class="result-sub" id="result-sub"></div>
         </div>
-      </div>
     </div>
 
 
@@ -357,6 +358,7 @@ const phaseNames=['Префлоп','Флоп','Тёрн','Ривер'];
 let deck=[],board=[],phase=0,pot=0,handsPlayed=0,actionLog=[];
 let currentBet=0,players=[],dealerIdx=0;
 let showdownMode=false;
+let winningCards=new Set();
 let sessionNet=0,heroStackAtDeal=0,handHistory=[],handToken=0;
 
 // === PERSISTENCE ===
@@ -481,6 +483,14 @@ function evalHand(hole,boardC){
   return best||[0,0,0,0,0];
 }
 function compareHands(h1,h2){for(let i=0;i<Math.max(h1.length,h2.length);i++){const a=h1[i]||0,b=h2[i]||0;if(a>b)return 1;if(a<b)return -1;}return 0;}
+function bestFive(hole,boardC){
+  let best=[],score=null;
+  combos5([...boardC,...hole]).forEach(cards=>{
+    const value=eval5(cards);
+    if(!score||compareHands(value,score)>0){best=cards;score=value;}
+  });
+  return best;
+}
 function handName(hole,boardC){if(!hole||hole.length<2)return '';return HAND_NAMES[evalHand(hole,boardC)[0]];}
 
 // === CARD ELEMENT ===
@@ -490,6 +500,7 @@ function cardEl(c,hidden,size){
   if(!c){e.className='card '+sz+' empty';return e;}
   if(hidden){e.className='card '+sz+' back';e.innerHTML='<div class="suit" style="font-size:'+(sz==='lg'?'28':'20')+'px">🂠</div>';return e;}
   e.className='card '+sz+' '+c.s.color;
+  if(winningCards.has(c)){e.classList.add('winning');e.title='Карта выигрышной комбинации';}
   e.innerHTML='<div class="rank">'+c.r+'</div><div class="suit">'+c.s.sym+'</div>';
   return e;
 }
@@ -719,6 +730,7 @@ function dealNewHand(){
   rebuyIfBusted();
   deck=newDeck();board=[];phase=0;pot=0;currentBet=0;minRaise=CFG.bb;actionLog=[];
   showdownMode=false;handOver=false;awaitingHero=false;handsPlayed++;
+  winningCards.clear();
   players.forEach(p=>{p.cards=[];p.folded=false;p.bet=0;p.allIn=false;p.acted=false;p.contributed=0;p.role='';});
   const n=players.length;
   btnIdx=dealerIdx%n;
@@ -939,7 +951,10 @@ function doShowdown(){
     if(!winners.length)return;
     const share=Math.floor(pt.amount/winners.length);
     let rem=pt.amount-share*winners.length;
-    winners.forEach(i=>{ players[i].stack+=share; });
+    winners.forEach(i=>{
+      players[i].stack+=share;
+      bestFive(players[i].cards,board).forEach(c=>winningCards.add(c));
+    });
     for(let k=0;k<rem;k++)players[winners[k%winners.length]].stack+=1;   // нечётные фишки — ближайшим к кнопке
     const label=pots.length>1?(pi===0?'Основной банк':'Сайд-пот '+pi):'Банк';
     msgs.push(label+' '+pt.amount+': '+winners.map(i=>players[i].name).join(', ')+' ('+HAND_NAMES[bestEv[0]]+')');
@@ -972,7 +987,12 @@ function concludeHand(sub){
   pot=0; players.forEach(p=>{p.bet=0;});
   updateStats(); saveState();
   setActions([{label:'🃏 Следующая раздача',cls:'deal',action:dealNewHand}]);
-  requestAnalysis(delta>0?true:delta<0?false:null, sub, handToken);
+  if(h.folded){
+    showAnalysisState('content');
+    document.getElementById('state-content').innerHTML='<div class="notice">Разбор пропущен: ты сбросил карты.</div>';
+  }else{
+    requestAnalysis(delta>0?true:delta<0?false:null, sub, handToken);
+  }
 }
 
 // === ANALYSIS ===
@@ -983,6 +1003,7 @@ function showAnalysisState(state){
 }
 
 async function requestAnalysis(heroWins,outcome,token){
+  if(players[0]?.folded)return;
   const key=getApiKey();
   const content=document.getElementById('state-content');
   if(!key){
